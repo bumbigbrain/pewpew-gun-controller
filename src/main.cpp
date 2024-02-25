@@ -4,7 +4,7 @@
 
 #define PUSH_BUTTON 19
 
-uint8_t stateControllerAddress[] = {0x3C, 0x61, 0x05, 0x03, 0xD4, 0xB0};//ส่งไปหาเฉพาะ mac address
+uint8_t stateControllerAddress[] = {0x3C, 0x61, 0x05, 0x03, 0xD4, 0xB0};
 
 
 typedef struct startGame {
@@ -16,34 +16,32 @@ startGame command;
 esp_now_peer_info_t peerInfo;
 int count = 0;
 
-//เมื่อส่งข้อมูลมาทำฟังก์ชั่นนี้
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
   Serial.print("\r\nLast Packet Send Status:\t");
   Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
 }
 
+
 void setup() {
   Serial.begin(9600);
   
   pinMode(PUSH_BUTTON, INPUT_PULLUP);
-  //ตั้งเป็นโหมด Wi-Fi Station
   WiFi.mode(WIFI_STA);
 
-  // สั่งให้เริ่ม ESP-NOW
+  // Init ESPNOW
   if (esp_now_init() != ESP_OK) {
     Serial.println("Error initializing ESP-NOW");
     return;
   }
 
-  //เมื่อส่งให้ทำฟังก์ชั่น OnDataSend ที่เราสร้างขึ้น
+  // Do OnDataSent() when sent
   esp_now_register_send_cb(OnDataSent);
 
-  // Register peer
+  // Register stateControllerPeer
   memcpy(peerInfo.peer_addr, stateControllerAddress, 6);
   peerInfo.channel = 0;
   peerInfo.encrypt = false;
 
-  // เชื่อมต่ออุปกรณ์ที่ต้องการสื่อสาร
   if (esp_now_add_peer(&peerInfo) != ESP_OK) {
     Serial.println("Failed to add peer");
     return;
@@ -71,6 +69,5 @@ void loop() {
     
 
   }
-
 }
 
